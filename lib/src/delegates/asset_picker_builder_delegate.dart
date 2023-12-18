@@ -706,7 +706,7 @@ class DefaultAssetPickerBuilderDelegate
   /// 资源选择器状态保持
   final DefaultAssetPickerProvider provider;
 
-  final Function(List<AssetEntity>)? onDone;
+  final void Function(List<AssetEntity>)? onDone;
 
   /// Thumbnail size in the grid.
   /// 预览时网络的缩略图大小
