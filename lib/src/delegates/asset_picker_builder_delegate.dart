@@ -180,7 +180,7 @@ abstract class AssetPickerBuilderDelegate<Asset, Path> {
 
   /// Blur radius in Apple OS layout mode.
   /// 苹果系列系统布局方式下的模糊度
-  double get appleOSBlurRadius => 10;
+  double get appleOSBlurRadius => 0;
 
   /// Height for the bottom occupied section.
   /// 底部区域占用的高度
@@ -678,6 +678,7 @@ class DefaultAssetPickerBuilderDelegate
   DefaultAssetPickerBuilderDelegate({
     required this.provider,
     required super.initialPermission,
+    this.onDone,
     super.gridCount,
     super.pickerTheme,
     super.specialItemPosition,
@@ -704,6 +705,8 @@ class DefaultAssetPickerBuilderDelegate
   /// [ChangeNotifier] for asset picker.
   /// 资源选择器状态保持
   final DefaultAssetPickerProvider provider;
+
+  final Function(List<AssetEntity>)? onDone;
 
   /// Thumbnail size in the grid.
   /// 预览时网络的缩略图大小
@@ -925,8 +928,13 @@ class DefaultAssetPickerBuilderDelegate
       shouldReversePreview: isAppleOS(context),
     );
     if (result != null) {
-      Navigator.of(context).maybePop(result);
+      processAssets(result);
     }
+  }
+
+  void processAssets(List<AssetEntity> result) {
+    if (onDone == null) return;
+    onDone!(result);
   }
 
   @override
@@ -936,7 +944,7 @@ class DefaultAssetPickerBuilderDelegate
         onTapHint: semanticsTextDelegate.sActionSwitchPathLabel,
         child: pathEntitySelector(context),
       ),
-      leading: backButton(context),
+      leading: const SizedBox(),
       blurRadius: isAppleOS(context) ? appleOSBlurRadius : 0,
     );
     appBarPreferredSize ??= appBar.preferredSize;
@@ -1509,7 +1517,9 @@ class DefaultAssetPickerBuilderDelegate
             borderRadius: BorderRadius.circular(3),
           ),
           onPressed: shouldAllowConfirm
-              ? () => Navigator.of(context).maybePop(p.selectedAssets)
+              ? () {
+                  processAssets(p.selectedAssets);
+                }
               : null,
           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           child: ScaleText(
